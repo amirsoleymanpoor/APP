@@ -1,4 +1,4 @@
-import { ApiResponse } from '../types';
+import { ApiResponse } from './types';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -10,31 +10,21 @@ export async function inspectComponent(
   customInstructions: string = ''
 ): Promise<ApiResponse> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
 
   try {
     const response = await fetch(`${API_BASE}/api/inspect-component`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        imageBase64,
-        mimeType,
-        componentType,
-        sensitivity,
-        customInstructions,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64, mimeType, componentType, sensitivity, customInstructions }),
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || `HTTP Error: ${response.status}`);
     }
-
     return await response.json();
   } catch (error: any) {
     clearTimeout(timeoutId);
